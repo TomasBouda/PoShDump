@@ -2,7 +2,7 @@
 
 namespace PoShDump.Html.Core.Attributes
 {
-	public interface IHtmlAttributeContainer
+	public interface IHtmlAttributesContainer
 	{
 		HashSet<HtmlAttribute> Attributes { get; }
 	}

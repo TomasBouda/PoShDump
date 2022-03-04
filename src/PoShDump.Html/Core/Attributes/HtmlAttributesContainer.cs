@@ -7,14 +7,16 @@ namespace PoShDump.Html.Core.Attributes
 		public HashSet<HtmlAttribute> Attributes { get; } = new HashSet<HtmlAttribute>();
 	}
 
-	public abstract class HtmlAttributeContainer<T> : BaseHtmlAttributeContainer
-		where T : IHtmlAttributeContainer, new()
+	public abstract class HtmlAttributesContainer<T> : BaseHtmlAttributeContainer
+		where T : IHtmlAttributesContainer, new()
 	{
 		public T Parent { get; protected set; }
 
 		public virtual T Add(string name, object value)
 		{
-			Attributes.Add(new HtmlAttribute(name, value.ToString()));
+			if (name == null) { throw new System.ArgumentNullException(nameof(name)); }
+
+			Attributes.Add(new HtmlAttribute(name, value?.ToString()));
 
 			return Parent;
 		}
@@ -35,7 +37,7 @@ namespace PoShDump.Html.Core.Attributes
 		public virtual T translate(string value) => Add(nameof(translate), value);
 	}
 
-	public sealed class HtmlAttributeContainer : HtmlAttributeContainer<HtmlAttributeContainer>, IHtmlAttributeContainer
+	public sealed class HtmlAttributeContainer : HtmlAttributesContainer<HtmlAttributeContainer>, IHtmlAttributesContainer
 	{
 		public HtmlAttributeContainer()
 		{

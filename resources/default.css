@@ -146,6 +146,7 @@ table thead {
 
 .value-string {
 	color: #a31515;
+	white-space: pre-wrap;
 }
 
 .value-string:before {

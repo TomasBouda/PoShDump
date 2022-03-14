@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using PoShDump.Html;
+using PoShDump.Html.Extensions;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
-using PoShDump.Html;
 
 namespace PoShDump.CmdLets
 {
@@ -24,7 +25,7 @@ namespace PoShDump.CmdLets
 		private HtmlPageGenerator HtmlGenerator { get; set; }
 		private ObjectProcessor ObjectProcessor { get; set; }
 
-		private List<object> objects = new List<object>();
+		private IEnumerable<object> _objects = new List<object>();
 
 		protected override void BeginProcessing()
 		{
@@ -36,19 +37,26 @@ namespace PoShDump.CmdLets
 		{
 			WriteObject(InputObject);
 
-			objects.Add(InputObject.BaseObject);
+			_objects = _objects.Add(InputObject.BaseObject);
 		}
 
 		protected override void EndProcessing()
 		{
 
-			if (objects.Count > 1 || objects.First().GetType().IsArray)
+			if (_objects.Count() > 1 || _objects.First().GetType().IsArray)
 			{
+				if (_objects.First().GetType().IsArray)
+				{
+					_objects = _objects.First() as IEnumerable<object>;
+				}
 
+				var baseObjects = _objects.Cast<PSObject>().Select(p => p.BaseObject);
+
+				HtmlGenerator.Generate(ObjectProcessor.DumpCollection(baseObjects, Depth), "TODO");
 			}
 			else
 			{
-				var obj = objects.First();
+				var obj = _objects.First();
 				Title = Title ?? $"Out-Dump • {obj.GetType()}";
 				HtmlGenerator.Generate(ObjectProcessor.DumpObject(obj, Depth), Title);
 			}

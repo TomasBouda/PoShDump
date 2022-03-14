@@ -1,15 +1,15 @@
-﻿using System;
+﻿using PoShDump.Html.Core.Attributes;
+using System;
 using System.Collections.Generic;
-using PoShDump.Html.Core.Attributes;
 
 namespace PoShDump.Html.Core.Elements
 {
-	public class HtmlElement<T> : BaseHtmlElement
-		where T : IHtmlAttributesContainer, new()
+	public class HtmlElement<T> : HtmlElement
+		where T : HtmlAttribute, new()
 	{
-		protected virtual T AttributeContainer { get; } = new T();
+		protected IAttributeContainer<T> AttributesContainer { get; set; } = new AttributeContainer<T>();
 
-		protected override HashSet<HtmlAttribute> Attributes => AttributeContainer.Attributes;
+		protected override IEnumerable<HtmlAttribute> Attributes => AttributesContainer;
 
 		public HtmlElement(string name, params object[] contents) : base(name, contents)
 		{
@@ -19,26 +19,10 @@ namespace PoShDump.Html.Core.Elements
 		{
 		}
 
-		public virtual HtmlElement<T> WithAttributes(Action<T> options)
+		public virtual HtmlElement<T> WithAttributes(Action<IAttributeContainer<T>> modifier)
 		{
-			options(AttributeContainer);
-			return this;
-		}
-	}
+			modifier(AttributesContainer);
 
-	public class HtmlElement : HtmlElement<HtmlAttributeContainer>
-	{
-		public HtmlElement(string name, params object[] contents) : base(name, contents)
-		{
-		}
-
-		public HtmlElement(string name, IEnumerable<object> contents) : base(name, contents)
-		{
-		}
-
-		public new HtmlElement WithAttributes(Action<HtmlAttributeContainer> options)
-		{
-			options(AttributeContainer);
 			return this;
 		}
 	}

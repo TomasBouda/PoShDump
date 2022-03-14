@@ -1,17 +1,19 @@
-﻿using System;
+﻿using PoShDump.Extensions;
+using PoShDump.Html.Core.Attributes;
+using PoShDump.Html.Core.Elements;
+using PoShDump.Html.Helpers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-using PoShDump.Html.Core.Elements;
-using PoShDump.Html.Helpers;
 
 namespace PoShDump.Html
 {
 	public class ObjectProcessor
 	{
-		private readonly BaseHtmlElement ARROW_DOWN = H.fa("fa-solid fa-square-caret-down");
+		private readonly HtmlElement ARROW_DOWN = H.fa("fa-solid fa-square-caret-down");
 
 		private List<string> IgnoredTypes { get; }
 
@@ -42,7 +44,7 @@ namespace PoShDump.Html
 					.WithAttributes(a => a.colspan(2))));
 			}
 
-			var tableRows = new List<BaseHtmlElement>();
+			var tableRows = new List<HtmlElement>();
 			var properties = inputType
 				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
 				.Where(p => p.GetMethod != null)
@@ -60,6 +62,29 @@ namespace PoShDump.Html
 			}
 
 			return H.table(header, H.tbody(tableRows)).WithAttributes(a => a.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
+		}
+
+		public HtmlElement DumpCollection(IEnumerable<object> inputCollection, int depth, bool collapsed = false, string tableClass = "tbl-collection")
+		{
+			var tableRows = new List<HtmlElement>();
+			var collectionType = inputCollection.GetType();
+			var count = inputCollection.Count();
+			var properties = inputCollection.First().GetType()
+				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+				.Where(p => p.GetMethod != null)
+				.OrderBy(p => p.Name);
+
+			var headers = properties.Select(p => H.th(H.span(p.Name).WithAttributes(a => a.title(p.PropertyType.FullName))));
+			var objectInfo = H.tr(H.th(ARROW_DOWN, H.nbsp(), $"{collectionType.Name} ({count})").WithAttributes(a => a.colspan(properties.Count())));
+			var thead = H.thead(objectInfo, headers);
+
+			foreach (var item in inputCollection)
+			{
+				var cells = properties.Select(p => H.td(DumpPropertyValue(item, p, depth - 1, collapsed)));
+				tableRows.Add(H.tr(cells));
+			}
+
+			return H.table(thead, H.tbody(tableRows)).WithAttributes(t => t.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
 		}
 
 		public HtmlNode DumpPropertyValue(object inputObject, PropertyInfo property, int depth, bool collapsed)
@@ -82,13 +107,13 @@ namespace PoShDump.Html
 					{
 						if (valueType.BaseType == typeof(Enum))
 						{
-							return H.a(value).WithAttributes(a => a.href($"https://docs.microsoft.com/cs-cz/dotnet/api/{valueType.FullName}"));
+							return H.a(value).WithAttributes(a => a.href($"https://docs.microsoft.com/cs-cz/dotnet/api/{valueType.FullName}").target("_blank"));
 						}
 						else
 						{
-							if (valueType.IsArray || valueType.IsAssignableFrom(typeof(IEnumerable)) || valueType.GetInterface(nameof(IEnumerable)) != null)
+							if (valueType.IsArray || valueType.GetInterface(nameof(IEnumerable)) != null)
 							{
-								return H.text("TODO collection");
+								return DumpCollection(value.ToEnumerable(), depth - 1, collapsed);
 							}
 							else
 							{

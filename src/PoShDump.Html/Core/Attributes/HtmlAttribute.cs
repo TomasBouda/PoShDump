@@ -1,5 +1,5 @@
-﻿using System.Xml.Linq;
-using PoShDump.Html.Core.Elements;
+﻿using PoShDump.Html.Core.Elements;
+using System.Xml.Linq;
 
 namespace PoShDump.Html.Core.Attributes
 {
@@ -9,11 +9,16 @@ namespace PoShDump.Html.Core.Attributes
 
 		public string Value { get; }
 
-		public HtmlAttribute(string name, string value)
+		public HtmlAttribute()
+		{
+
+		}
+
+		public HtmlAttribute(string name, object value)
 		{
 			Name = name ?? throw new System.ArgumentNullException(nameof(name));
 
-			Value = value;
+			Value = value?.ToString();
 		}
 
 		public override XObject ToXml()

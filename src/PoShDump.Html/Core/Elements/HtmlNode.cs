@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PoShDump.Html.Extensions;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PoShDump.Html.Core.Elements
@@ -7,14 +8,14 @@ namespace PoShDump.Html.Core.Elements
 	{
 		protected IEnumerable<HtmlNode> Contents { get; private set; }
 
-		protected HtmlNode(IEnumerable<HtmlNode> contents)
+		internal HtmlNode(IEnumerable<HtmlNode> contents)
 		{
 			Contents = contents?.ToList();
 		}
 
 		public HtmlNode AddChild(HtmlNode child)
 		{
-			Contents = Contents.Concat(new List<HtmlNode> { child });
+			Contents = Contents.Add(child);
 
 			return this;
 		}

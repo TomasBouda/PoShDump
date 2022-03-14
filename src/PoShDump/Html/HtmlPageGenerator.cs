@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using System.IO;
-using PoShDump.Html.Core.Elements;
+﻿using PoShDump.Html.Core.Elements;
 using PoShDump.Html.Helpers;
+using System.Diagnostics;
+using System.IO;
 
 namespace PoShDump.Html
 {
@@ -14,13 +14,13 @@ namespace PoShDump.Html
 			RootPath = rootPath;
 		}
 
-		public void Generate(BaseHtmlElement element, string title)
+		public void Generate(HtmlElement element, string title)
 		{
 			var template = File.ReadAllText(Path.Combine(RootPath, "resources\\out_template.html"));
 
 			template = template
-				.Replace("{Stylesheet}", H.linkCss(Path.Combine(RootPath, "resources\\default.css")).ToString())
-				.Replace("{Body_Scripts}", H.script(Path.Combine(RootPath, "resources\\page.js")).ToString())
+				.Replace("{Stylesheet}", H.LinkCss(Path.Combine(RootPath, "resources\\default.css")).ToString())
+				.Replace("{Body_Scripts}", H.LinkScript(Path.Combine(RootPath, "resources\\page.js")).ToString())
 				.Replace("{Content}", element.ToString())
 				.Replace("{Title}", title);
 

@@ -1,43 +1,57 @@
-﻿using System.Collections.Generic;
+﻿using PoShDump.Html.Core.Attributes;
+using PoShDump.Html.Extensions;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using PoShDump.Html.Core.Attributes;
 
 namespace PoShDump.Html.Core.Elements
 {
-	public abstract class BaseHtmlElement : HtmlNode
+	public abstract class HtmlElement : HtmlNode
 	{
 		public string Name { get; }
 
-		protected virtual HashSet<HtmlAttribute> Attributes { get; }
+		protected virtual IEnumerable<HtmlAttribute> Attributes { get; set; } = new HashSet<HtmlAttribute>();
 
-		protected BaseHtmlElement(string name, params object[] contents) : base(GetNodes(contents))
+		protected HtmlElement(string name, params object[] contents) : base(GetNodes(contents))
 		{
 			Name = name;
 		}
 
-		protected BaseHtmlElement(string name, IEnumerable<object> contents) : base(GetNodes(contents))
+		protected HtmlElement(string name, IEnumerable<object> contents) : base(GetNodes(contents))
 		{
 			Name = name;
+		}
+
+		public HtmlElement AddAttribute(string name, object value)
+		{
+			Attributes = Attributes.Add(new HtmlAttribute(name, value));
+			return this;
 		}
 
 		private static IEnumerable<HtmlNode> GetNodes(IEnumerable<object> contents)
 		{
-			return contents?.Select(c =>
+			IEnumerable<HtmlNode> joinedCollection = new List<HtmlNode>();
+			foreach (var content in contents)
 			{
-				if (c is string str)
+				if (content is string str)
 				{
-					return new HtmlText(str);
+					joinedCollection =joinedCollection.Add(new HtmlText(str));
 				}
-				else if (c is HtmlNode node)
+				else if (content is HtmlNode node)
 				{
-					return node;
+					joinedCollection = joinedCollection.Add(node);
+				}
+				else if (content is IEnumerable<HtmlNode> nodeCollection)
+				{
+					joinedCollection = joinedCollection.Concat(nodeCollection);
 				}
 				else
 				{
-					return new HtmlText(c.ToString());
+					joinedCollection = joinedCollection.Add(new HtmlText(content.ToString()));
 				}
-			});
+			}
+
+			return joinedCollection;
 		}
 
 		public override XObject ToXml()

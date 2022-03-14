@@ -3,7 +3,8 @@
     "SimpleKeePass": {
       "commandName": "Executable",
       "executablePath": "pwsh",
-      "commandLineArgs": "-file \"C:\\Data\\GIT\\PoShDump\\debug.ps1\""
+      "commandLineArgs": "-File \"D:\\Root\\GIT\\PoShDump\\debug.ps1\" -NoExit",
+      "workingDirectory": "D:\\Root\\GIT\\PoShDump"
     }
   }
 }

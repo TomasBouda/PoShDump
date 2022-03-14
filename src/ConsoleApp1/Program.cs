@@ -12,6 +12,12 @@ H.a("test").ToConsole();
 
 public static class ext
 {
+	public enum test
+	{
+		One,
+		Two,
+		Three
+	}
 	public static void ToConsole(this object str)
 	{
 		Console.WriteLine(str);

@@ -86,11 +86,15 @@ table thead {
 	background-color: #DAEAFA;
 }
 
-.tbl-object>thead tr:nth-child(2) th {
+.tbl-object > thead tr:nth-child(2) th {
 	font-family: "Segoe UI", Verdana, sans-serif;
 }
 
-.tbl-exception thead {
+.tbl-exception {
+	border: 2px solid #B56172;
+}
+
+.tbl-exception>thead {
 	background-color: #B56172;
 }
 
@@ -133,7 +137,6 @@ table thead {
 
 .value-null {
 	color: #209020;
-	/* font-style: italic; */
 }
 
 .value-false {
@@ -155,4 +158,8 @@ table thead {
 
 .value-string:after {
 	content: "\"";
+}
+
+.value-enum {
+	font-style: italic;
 }

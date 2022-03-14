@@ -42,17 +42,18 @@ namespace PoShDump.CmdLets
 
 		protected override void EndProcessing()
 		{
-
 			if (_objects.Count() > 1 || _objects.First().GetType().IsArray)
 			{
 				if (_objects.First().GetType().IsArray)
 				{
 					_objects = _objects.First() as IEnumerable<object>;
+					_objects = _objects?.Cast<PSObject>().Select(p => p.BaseObject);
 				}
 
-				var baseObjects = _objects.Cast<PSObject>().Select(p => p.BaseObject);
+				var baseObjects = _objects?.ToArray();
 
-				HtmlGenerator.Generate(ObjectProcessor.DumpCollection(baseObjects, Depth), "TODO");
+				Title = Title ?? $"Out-Dump • {baseObjects?.First()?.GetType().FullName}";
+				HtmlGenerator.Generate(ObjectProcessor.DumpCollection(baseObjects, Depth), Title);
 			}
 			else
 			{

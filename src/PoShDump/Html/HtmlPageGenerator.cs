@@ -1,5 +1,7 @@
 ﻿using PoShDump.Html.Core.Elements;
 using PoShDump.Html.Helpers;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -19,8 +21,14 @@ namespace PoShDump.Html
 			var template = File.ReadAllText(Path.Combine(RootPath, "resources\\out_template.html"));
 
 			template = template
-				.Replace("{Stylesheet}", H.LinkCss(Path.Combine(RootPath, "resources\\default.css")).ToString())
-				.Replace("{Body_Scripts}", H.LinkScript(Path.Combine(RootPath, "resources\\page.js")).ToString())
+				.Replace("{Stylesheet}", string.Join(Environment.NewLine, new List<HtmlNode>
+				{
+					H.LinkCss(Path.Combine(RootPath, "resources\\default.css"))
+				}))
+				.Replace("{Body_Scripts}", string.Join(Environment.NewLine, new List<HtmlNode>
+				{
+					H.LinkScript(Path.Combine(RootPath, "resources\\page.js"))
+				}))
 				.Replace("{Content}", element.ToString())
 				.Replace("{Title}", title);
 

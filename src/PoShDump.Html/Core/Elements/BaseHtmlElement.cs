@@ -35,7 +35,7 @@ namespace PoShDump.Html.Core.Elements
 			{
 				if (content is string str)
 				{
-					joinedCollection =joinedCollection.Add(new HtmlText(str));
+					joinedCollection = joinedCollection.Add(new HtmlText(str));
 				}
 				else if (content is HtmlNode node)
 				{
@@ -43,7 +43,7 @@ namespace PoShDump.Html.Core.Elements
 				}
 				else if (content is IEnumerable<HtmlNode> nodeCollection)
 				{
-					joinedCollection = joinedCollection.Concat(nodeCollection);
+					joinedCollection = joinedCollection?.Concat(nodeCollection);
 				}
 				else
 				{

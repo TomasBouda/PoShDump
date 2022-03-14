@@ -1,5 +1,4 @@
-﻿using PoShDump.Extensions;
-using PoShDump.Html.Core.Attributes;
+﻿using PoShDump.Html.Core.Attributes;
 using PoShDump.Html.Core.Elements;
 using PoShDump.Html.Helpers;
 using System;
@@ -55,7 +54,7 @@ namespace PoShDump.Html
 				foreach (var property in properties)
 				{
 					tableRows.Add(H.tr(
-						H.td(H.span(property.Name).WithAttributes(a => a.title(property.PropertyType.FullName))),
+						H.td(H.span(property.Name)).WithAttributes(a => a.title(property.PropertyType.FullName)),
 									H.td(DumpPropertyValue(inputObject, property, depth, true))
 						));
 				}
@@ -64,25 +63,38 @@ namespace PoShDump.Html
 			return H.table(header, H.tbody(tableRows)).WithAttributes(a => a.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
 		}
 
-		public HtmlElement DumpCollection(IEnumerable<object> inputCollection, int depth, bool collapsed = false, string tableClass = "tbl-collection")
+		public HtmlElement DumpCollection(IEnumerable inputCollection, int depth, bool collapsed = false, string tableClass = "tbl-collection")
 		{
 			var tableRows = new List<HtmlElement>();
 			var collectionType = inputCollection.GetType();
-			var count = inputCollection.Count();
-			var properties = inputCollection.First().GetType()
-				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.Where(p => p.GetMethod != null)
-				.OrderBy(p => p.Name);
+			List<PropertyInfo> properties = null;
+			int count = 0;
 
-			var headers = properties.Select(p => H.th(H.span(p.Name).WithAttributes(a => a.title(p.PropertyType.FullName))));
-			var objectInfo = H.tr(H.th(ARROW_DOWN, H.nbsp(), $"{collectionType.Name} ({count})").WithAttributes(a => a.colspan(properties.Count())));
-			var thead = H.thead(objectInfo, headers);
-
-			foreach (var item in inputCollection)
+			foreach (var collectionItem in inputCollection)
 			{
-				var cells = properties.Select(p => H.td(DumpPropertyValue(item, p, depth - 1, collapsed)));
+				if (properties == null)
+				{
+					properties = collectionItem.GetType()
+						.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+						.Where(p => p.GetMethod != null)
+						.OrderBy(p => p.Name)
+						.ToList();
+				}
+
+				var cells = new List<td>();
+				foreach (var property in properties)
+				{
+					cells.Add(H.td(DumpPropertyValue(collectionItem, property, depth - 1, true)));
+				}
+
 				tableRows.Add(H.tr(cells));
+
+				count++;
 			}
+
+			var headers = properties.Select(p => H.th(H.span(p.Name)).WithAttributes(a => a.title(p.PropertyType.FullName)));
+			var objectInfo = H.tr(H.th(ARROW_DOWN, H.nbsp(), $"{collectionType.Name} ({count})").WithAttributes(a => a.colspan(properties.Count)));
+			var thead = H.thead(objectInfo, headers);
 
 			return H.table(thead, H.tbody(tableRows)).WithAttributes(t => t.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
 		}
@@ -91,7 +103,7 @@ namespace PoShDump.Html
 		{
 			try
 			{
-				var value = property.GetValue(inputObject);
+				var value = inputObject.GetType().GetProperty(property.Name)?.GetValue(inputObject);
 
 				if (value == null)
 				{
@@ -103,22 +115,22 @@ namespace PoShDump.Html
 
 				if (!valueType.IsPrimitive && !IgnoredTypes.Any(t => t.Equals(valueType.FullName)))
 				{
-					if (depth > 0)
+					if (valueType.BaseType == typeof(Enum))
 					{
-						if (valueType.BaseType == typeof(Enum))
+						//var infoButton = H.a(H.fa("fa-solid fa-circle-info")).WithAttributes(a =>
+						//	a.href($"https://docs.microsoft.com/cs-cz/dotnet/api/{valueType.FullName}")
+						//		.target("_blank"));
+						return H.span(encodedStringValue, H.nbsp()).WithAttributes(a => a.@class("value-enum").title("docs"));
+					}
+					else if (depth > 0)
+					{
+						if (value is IEnumerable enumerable)
 						{
-							return H.a(value).WithAttributes(a => a.href($"https://docs.microsoft.com/cs-cz/dotnet/api/{valueType.FullName}").target("_blank"));
+							return DumpCollection(enumerable, depth - 1, collapsed);
 						}
 						else
 						{
-							if (valueType.IsArray || valueType.GetInterface(nameof(IEnumerable)) != null)
-							{
-								return DumpCollection(value.ToEnumerable(), depth - 1, collapsed);
-							}
-							else
-							{
-								return DumpObject(value, depth - 1, collapsed);
-							}
+							return DumpObject(value, depth - 1, collapsed);
 						}
 					}
 				}
@@ -135,11 +147,25 @@ namespace PoShDump.Html
 			}
 			catch (TargetInvocationException tix)
 			{
-				return DumpObject(tix.InnerException, depth - 1, collapsed, "tbl-exception");
+				if (depth > 0)
+				{
+					return DumpObject(tix.InnerException, depth - 1, collapsed, "tbl-exception");
+				}
+				else
+				{
+					return H.text(tix.Message);
+				}
 			}
 			catch (Exception ex)
 			{
-				return DumpObject(ex, depth - 1, collapsed, "tbl-exception");
+				if (depth > 0)
+				{
+					return DumpObject(ex, depth - 1, collapsed, "tbl-exception");
+				}
+				else
+				{
+					return H.text(ex.Message);
+				}
 			}
 		}
 	}

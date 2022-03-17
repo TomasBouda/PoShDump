@@ -1,25 +1,16 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using PoShDump.Html.Core.Attributes;
-using PoShDump.Html.Helpers;
+using PoShDump.Html;
+using System.Diagnostics;
 
-H.a("abcd").WithAttributes(a => a.href("asd").title("ahoj").hreflang("dd")).ToConsole();
+var op = new ObjectProcessor();
+var hg = new HtmlPageGenerator(@"D:\Root\GIT\PoShDump\src\PoShDump\bin\Debug\netstandard2.0");
 
-H.script("abcd").WithAttributes(d => d.title("")).ToConsole();
+var proc = Process.GetProcesses().Take(25);
+var sw = Stopwatch.StartNew();
+var dump = await op.DumpCollection(proc, 2);
+sw.Stop();
 
-H.a("test").ToConsole();
+Console.WriteLine(sw.Elapsed.ToString());
 
-
-public static class ext
-{
-	public enum test
-	{
-		One,
-		Two,
-		Three
-	}
-	public static void ToConsole(this object str)
-	{
-		Console.WriteLine(str);
-	}
-}
+hg.Generate(dump, "c#");

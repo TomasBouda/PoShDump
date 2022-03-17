@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PoShDump.Html\PoShDump.Html.csproj" />
+    <ProjectReference Include="..\PoShDump\PoShDump.csproj" />
   </ItemGroup>
 
 </Project>

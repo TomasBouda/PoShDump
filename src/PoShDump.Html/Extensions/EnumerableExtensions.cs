@@ -1,8 +1,5 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PoShDump.Html.Extensions
 {
@@ -15,6 +12,15 @@ namespace PoShDump.Html.Extensions
 				yield return cur;
 			}
 			yield return value;
+		}
+
+		public static object First(this IEnumerable enumerable)
+		{
+			var enumerator = enumerable.GetEnumerator();
+			enumerator.MoveNext();
+			var first = enumerator.Current;
+			enumerator.Reset();
+			return first;
 		}
 	}
 }

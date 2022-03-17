@@ -116,11 +116,13 @@ table thead {
 	text-align: center;
 }
 
-.tbl-object>tbody>tr>td:nth-child(1) {
+.tbl-object > tbody > tr > td:nth-child(1),
+.tbl-exception > tbody > tr > td:nth-child(1) {
 	border-color: #777;
 	background-color: #ddd;
 	color: black;
 	font-family: Segoe UI Semibold, sans-serif;
+	vertical-align: top;
 }
 
 .tbl-object td:nth-child(1) span {

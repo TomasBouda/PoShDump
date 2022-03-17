@@ -1,6 +1,7 @@
 ﻿using PoShDump.Html;
 using PoShDump.Html.Extensions;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -42,7 +43,12 @@ namespace PoShDump.CmdLets
 
 		protected override void EndProcessing()
 		{
-			if (_objects.Count() > 1 || _objects.First().GetType().IsArray)
+			if (!_objects.Any())
+			{
+				return;
+			}
+
+			if (_objects.Count() > 1 ||  _objects.First().GetType().IsArray)
 			{
 				if (_objects.First().GetType().IsArray)
 				{
@@ -53,13 +59,27 @@ namespace PoShDump.CmdLets
 				var baseObjects = _objects?.ToArray();
 
 				Title = Title ?? $"Out-Dump • {baseObjects?.First()?.GetType().FullName}";
-				HtmlGenerator.Generate(ObjectProcessor.DumpCollection(baseObjects, Depth), Title);
+
+				var sw = Stopwatch.StartNew();
+				var dump = ObjectProcessor.DumpCollection(baseObjects, Depth).GetAwaiter().GetResult();
+				sw.Stop();
+
+				Host.UI.WriteLine(sw.Elapsed.ToString());
+
+				HtmlGenerator.Generate(dump, Title);
 			}
 			else
 			{
 				var obj = _objects.First();
 				Title = Title ?? $"Out-Dump • {obj.GetType()}";
-				HtmlGenerator.Generate(ObjectProcessor.DumpObject(obj, Depth), Title);
+
+				var sw = Stopwatch.StartNew();
+				var dump = ObjectProcessor.DumpObject(obj, Depth).GetAwaiter().GetResult();
+				sw.Stop();
+
+				Host.UI.WriteLine(sw.Elapsed.ToString());
+
+				HtmlGenerator.Generate(dump, Title);
 			}
 
 		}

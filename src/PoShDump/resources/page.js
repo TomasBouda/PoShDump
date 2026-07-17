@@ -1,23 +1,21 @@
-$(function(){
-	$('th i').click(function(){
-
-		var table = $(this).closest('table');
-		var shown = table.data('shown');
-
-		// Show collection header
-		$(this).closest('table.tbl-collection > thead').find('tr:nth-child(2)').first().toggle();
-		table.find('tbody').first().toggle();
-
-		if(shown === undefined || shown === false){
-			table.data('shown', true);
-			$(this).removeClass('fa-square-caret-down').addClass('fa-square-caret-up');
-			table.css('border-bottom-style', 'solid');
-			table[0].scrollIntoView ({behavior:'smooth', block:'nearest'});
+document.addEventListener('DOMContentLoaded', function () {
+	Array.prototype.forEach.call(document.querySelectorAll('th .toggle'), function (toggle) {
+		var table = toggle.closest('table');
+		if (!table) {
+			return;
 		}
-		else{
-			table.data('shown', false);
-			$(this).removeClass('fa-square-caret-up').addClass('fa-square-caret-down');
-			table.css('border-bottom-style', 'dashed');
-		}
+
+		toggle.textContent = table.classList.contains('collapsed') ? '[+]' : '[-]';
+		toggle.addEventListener('click', function (event) {
+			event.stopPropagation();
+
+			var collapsed = table.classList.toggle('collapsed');
+			toggle.textContent = collapsed ? '[+]' : '[-]';
+			table.style.borderBottomStyle = collapsed ? 'dashed' : 'solid';
+
+			if (!collapsed) {
+				table.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			}
+		});
 	});
-})
+});

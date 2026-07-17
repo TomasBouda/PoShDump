@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
@@ -16,8 +17,6 @@ namespace PoShDump.Html
 {
 	public class ObjectProcessor
 	{
-		private readonly HtmlElement ARROW_DOWN = H.fa("fa-solid fa-square-caret-down");
-
 		private List<string> IgnoredTypes { get; }
 
 		public ObjectProcessor()
@@ -29,131 +28,126 @@ namespace PoShDump.Html
 			};
 		}
 
-		public async Task<HtmlElement> DumpObject(object inputObject, int depth, bool collapsed = false, string tableClass = "tbl-object")
+		public async Task<HtmlElement> DumpObjectAsync(object inputObject, int depth, bool collapsed = false, string tableClass = "tbl-object")
 		{
-			var inputType = inputObject.GetType();
+			var displayObject = GetBaseObject(inputObject);
+			var inputType = displayObject.GetType();
 			var header = H.thead(
-				H.th(ARROW_DOWN, H.nbsp(), inputType.Name).WithAttributes(a => a.colspan(2))
+				H.th(ToggleControl(), H.nbsp(), inputType.Name).WithAttributes(a => a.colspan(2))
 				);
 
-			if (inputObject is Exception ex)
+			if (displayObject is Exception ex)
 			{
 				header.AddChild(H.tr(H.th(ex.Message)
 					.WithAttributes(a => a.colspan(2))));
 			}
-			else if (inputObject.ToString().Length <= 50)
+			else if (displayObject.ToString().Length <= 50)
 			{
-				header.AddChild(H.tr(H.th(inputObject.ToString())
+				header.AddChild(H.tr(H.th(displayObject.ToString())
 					.WithAttributes(a => a.colspan(2))));
 			}
 
-			var tableRows = new ConcurrentBag<HtmlElement>();
-			var properties = inputType
-				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.Where(p => p.GetMethod != null)
-				.OrderBy(p => p.Name)
-				.ToList();
+			var tableRows = new List<HtmlElement>();
+			var properties = GetProperties(inputObject);
 
 			if (properties.Any())
 			{
-				await properties.ParallelForEachAsync(async property =>
+				foreach (var property in properties)
 				{
 					tableRows.Add(H.tr(
-						H.td(H.span(property.Name)).WithAttributes(a => a.title(property.PropertyType.FullName)),
-						H.td(await DumpPropertyValue(inputObject, property, depth, true))
+						H.td(H.span(property.Name)).WithAttributes(a => a.title(property.TypeName)),
+						H.td(await DumpPropertyValue(property, depth, true))
 					));
-				});
+				}
 			}
 
 			return H.table(header, H.tbody(tableRows)).WithAttributes(a => a.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
 		}
 
-		public async Task<HtmlElement> DumpCollection(IEnumerable inputCollection, int depth, bool collapsed = false, string tableClass = "tbl-collection")
+		public async Task<HtmlElement> DumpCollectionAsync(IEnumerable inputCollection, int depth, bool collapsed = false, string tableClass = "tbl-collection")
 		{
-			var tableRows = new ConcurrentBag<HtmlElement>();
+			var tableRows = new List<HtmlElement>();
 			var collectionType = inputCollection.GetType();
-			int count = 0;
 
 			var objectCollection = inputCollection.Cast<object>().ToList();
-			var firstItem = objectCollection.First();
+			var firstItem = objectCollection.FirstOrDefault();
 			if (firstItem == null)
 				return H.div("No elements");
 
-			var properties = firstItem.GetType()
-				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.Where(p => p.GetMethod != null)
-				.OrderBy(p => p.Name)
-				.ToList();
+			var properties = GetProperties(firstItem);
 
 
-			await objectCollection.ParallelForEachAsync(async objectToDump =>
+			foreach (var objectToDump in objectCollection)
 			{
 				var cells = new List<td>();
 				foreach (var property in properties)
 				{
-					cells.Add(H.td(await DumpPropertyValue(objectToDump, property, depth - 1, true)));
+					cells.Add(H.td(await DumpPropertyValue(property.ForObject(objectToDump), depth - 1, true)));
 				}
 
 				tableRows.Add(H.tr(cells));
+			}
 
-				count++;
-			});
-
-			var headers = properties.Select(p => H.th(p.Name).WithAttributes(a => a.title(p.PropertyType.FullName)));
-			var objectInfo = H.tr(H.th(ARROW_DOWN, H.nbsp(), $"{collectionType.Name} ({count})").WithAttributes(a => a.colspan(properties.Count)));
+			var headers = properties.Select(p => H.th(p.Name).WithAttributes(a => a.title(p.TypeName)));
+			var objectInfo = H.tr(H.th(ToggleControl(), H.nbsp(), $"{collectionType.Name} ({objectCollection.Count})").WithAttributes(a => a.colspan(properties.Count)));
 			var thead = H.thead(objectInfo, headers);
 
 			return H.table(thead, H.tbody(tableRows)).WithAttributes(t => t.@class($"{tableClass} {(collapsed ? "collapsed" : "")}"));
 		}
 
-		public async Task<HtmlNode> DumpPropertyValue(object inputObject, PropertyInfo property, int depth, bool collapsed)
+		private static HtmlElement ToggleControl()
+		{
+			return H.span("[-]").WithAttributes(a => a.@class("toggle").title("Collapse or expand"));
+		}
+
+		public async Task<HtmlNode> DumpPropertyValue(DumpProperty property, int depth, bool collapsed)
 		{
 			try
 			{
-				var value = inputObject.GetType().GetProperty(property.Name)?.GetValue(inputObject);
+				var value = property.GetValue();
 
 				if (value == null)
 				{
 					return H.span("null").WithAttributes(a => a.@class("value-null"));
 				}
 
-				var valueType = property.PropertyType;
-				var encodedStringValue = HttpUtility.HtmlEncode(value.ToString().Trim());
+				var valueType = GetBaseObject(value).GetType();
+				var stringValue = value.ToString().Trim();
 
 				if (!valueType.IsPrimitive && !IgnoredTypes.Any(t => t.Equals(valueType.FullName)))
 				{
-					if (valueType.BaseType == typeof(Enum))
+					if (valueType.IsEnum)
 					{
-						return H.span(encodedStringValue, H.nbsp()).WithAttributes(a => a.@class("value-enum"));
+						return H.span(stringValue, H.nbsp()).WithAttributes(a => a.@class("value-enum"));
 					}
 					else if (depth > 0)
 					{
 						if (value is IEnumerable enumerable)
 						{
-							return await DumpCollection(enumerable, depth - 1, collapsed);
+							return await DumpCollectionAsync(enumerable, depth - 1, collapsed);
 						}
 						else
 						{
-							return await DumpObject(value, depth - 1, collapsed);
+							return await DumpObjectAsync(value, depth - 1, collapsed);
 						}
 					}
 				}
 				else if (value is string)
 				{
-					return H.span(encodedStringValue).WithAttributes(a => a.@class("value-string"));
+					return H.span(stringValue).WithAttributes(a => a.@class("value-string"));
 				}
 				else if (value is bool booleanValue)
 				{
-					return H.span(encodedStringValue).WithAttributes(a => a.@class($"value-{booleanValue.ToString().ToLower()}"));
+					return H.span(stringValue).WithAttributes(a => a.@class($"value-{booleanValue.ToString().ToLower()}"));
 				}
 
-				return H.text(encodedStringValue);
+				return H.text(stringValue);
 			}
 			catch (TargetInvocationException tix)
 			{
 				if (depth > 0)
 				{
-					return await DumpObject(tix.InnerException, depth - 1, collapsed, "tbl-exception");
+					return await DumpObjectAsync(tix.InnerException, depth - 1, collapsed, "tbl-exception");
 				}
 				else
 				{
@@ -164,12 +158,58 @@ namespace PoShDump.Html
 			{
 				if (depth > 0)
 				{
-					return await DumpObject(ex, depth - 1, collapsed, "tbl-exception");
+					return await DumpObjectAsync(ex, depth - 1, collapsed, "tbl-exception");
 				}
 				else
 				{
 					return H.text(ex.Message);
 				}
+			}
+		}
+
+		private static object GetBaseObject(object inputObject)
+		{
+			return (inputObject as PSObject)?.BaseObject ?? inputObject;
+		}
+
+		private static List<DumpProperty> GetProperties(object inputObject)
+		{
+			var psObject = inputObject as PSObject ?? PSObject.AsPSObject(inputObject);
+
+			return psObject.Properties
+				.Where(p => p.IsGettable)
+				.OrderBy(p => p.Name)
+				.Select(p => new DumpProperty(inputObject, p.Name, p.TypeNameOfValue))
+				.ToList();
+		}
+
+		public class DumpProperty
+		{
+			private readonly object _inputObject;
+
+			public DumpProperty(object inputObject, string name, string typeName)
+			{
+				_inputObject = inputObject;
+				Name = name;
+				TypeName = typeName;
+			}
+
+			public string Name { get; }
+			public string TypeName { get; }
+
+			public object GetValue()
+			{
+				var psObject = _inputObject as PSObject ?? PSObject.AsPSObject(_inputObject);
+
+				return psObject.Properties[Name].Value;
+			}
+
+			public DumpProperty ForObject(object inputObject)
+			{
+				var psObject = inputObject as PSObject ?? PSObject.AsPSObject(inputObject);
+				var property = psObject.Properties[Name];
+
+				return new DumpProperty(inputObject, Name, property?.TypeNameOfValue ?? TypeName);
 			}
 		}
 	}

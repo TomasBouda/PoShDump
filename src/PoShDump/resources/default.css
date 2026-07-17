@@ -4,22 +4,36 @@
 	margin: 0px;
 }
 
+html,
+body {
+	min-height: 100vh;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+}
+
 .donate {
 	font-size: 14px;
 	text-align: center;
 	font-weight: bold;
 	padding: 5px;
+	margin-top: auto;
 }
 
 footer {
 	font-size: 14px;
 	text-align: center;
 	background: #DAEAFA;
-	padding: 5px;
+	padding: 7px 5px;
 }
 
-.credits{
+.credits {
+	display: block;
 	font-size: 12px;
+	margin-top: 3px;
+	opacity: 0.85;
 }
 
 body>table {
@@ -66,8 +80,12 @@ table th>span {
 	font-weight: inherit;
 }
 
-table th i {
+table th .toggle {
 	cursor: pointer;
+	display: inline-block;
+	font-family: Consolas, "Segoe UI Mono", monospace;
+	min-width: 3ch;
+	user-select: none;
 }
 
 td,

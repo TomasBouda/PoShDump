@@ -1,4 +1,5 @@
-﻿using PoShDump.Html;
+﻿using System;
+using PoShDump.Html;
 using PoShDump.Html.Extensions;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,9 +20,20 @@ namespace PoShDump.CmdLets
 		public PSObject InputObject { get; set; }
 
 		[Parameter(Mandatory = false)]
+		[ValidateRange(0, 10)]
 		public int Depth { get; set; } = 2;
 
+		[Parameter(Mandatory = false)]
 		public string Title { get; set; }
+		
+		[Parameter(Mandatory = false)]
+		public string ResourcesDirectory { get; set; }
+		
+		[Parameter(Mandatory = false)]
+		public string OutputDirectory { get; set; }
+		
+		[Parameter(Mandatory = false)]
+		public SwitchParameter Show { get; set; }
 
 		private HtmlPageGenerator HtmlGenerator { get; set; }
 		private ObjectProcessor ObjectProcessor { get; set; }
@@ -30,15 +42,32 @@ namespace PoShDump.CmdLets
 
 		protected override void BeginProcessing()
 		{
-			HtmlGenerator = new HtmlPageGenerator(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+			var rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+			if (string.IsNullOrEmpty(ResourcesDirectory))
+			{
+				ResourcesDirectory = Path.Combine(rootPath, "resources");
+			}
+			if (string.IsNullOrEmpty(OutputDirectory))
+			{
+				OutputDirectory = Path.Combine(Path.GetTempPath(), "TomLabs", "PoShDump");
+			}
+
+			if (!Directory.Exists(OutputDirectory))
+			{
+				Directory.CreateDirectory(OutputDirectory);
+			}
+			
+			HtmlGenerator = new HtmlPageGenerator(ResourcesDirectory);
 			ObjectProcessor = new ObjectProcessor();
 		}
 
 		protected override void ProcessRecord()
 		{
+			// PassThru
 			WriteObject(InputObject);
 
-			_objects = _objects.Add(InputObject.BaseObject);
+			_objects = _objects.Add(InputObject);
 		}
 
 		protected override void EndProcessing()
@@ -48,40 +77,77 @@ namespace PoShDump.CmdLets
 				return;
 			}
 
-			if (_objects.Count() > 1 ||  _objects.First().GetType().IsArray)
+			var objects = NormalizeInputObjects().ToArray();
+			if (!objects.Any())
 			{
-				if (_objects.First().GetType().IsArray)
-				{
-					_objects = _objects.First() as IEnumerable<object>;
-					_objects = _objects?.Cast<PSObject>().Select(p => p.BaseObject);
-				}
+				return;
+			}
 
-				var baseObjects = _objects?.ToArray();
-
-				Title = Title ?? $"Out-Dump • {baseObjects?.First()?.GetType().FullName}";
+			if (objects.Length > 1)
+			{
+				Title = Title ?? $"{GetObjectTypeName(objects.First())} • Out-Dump";
 
 				var sw = Stopwatch.StartNew();
-				var dump = ObjectProcessor.DumpCollection(baseObjects, Depth).GetAwaiter().GetResult();
+				var dump = ObjectProcessor.DumpCollectionAsync(objects, Depth).GetAwaiter().GetResult();
 				sw.Stop();
 
-				Host.UI.WriteLine(sw.Elapsed.ToString());
+				// Host.UI.WriteLine(sw.Elapsed.ToString());
 
-				HtmlGenerator.Generate(dump, Title);
+				var dumpPath = HtmlGenerator.Generate(dump, Title, OutputDirectory);
+
+				if (Show.IsPresent)
+				{
+					OpenInDefaultApplication(dumpPath);
+				}
 			}
 			else
 			{
-				var obj = _objects.First();
-				Title = Title ?? $"Out-Dump • {obj.GetType()}";
+				var obj = objects.First();
+				Title = Title ?? $"{GetObjectTypeName(obj)} • Out-Dump";
 
 				var sw = Stopwatch.StartNew();
-				var dump = ObjectProcessor.DumpObject(obj, Depth).GetAwaiter().GetResult();
+				var dump = ObjectProcessor.DumpObjectAsync(obj, Depth).GetAwaiter().GetResult();
 				sw.Stop();
 
-				Host.UI.WriteLine(sw.Elapsed.ToString());
+				// Host.UI.WriteLine(sw.Elapsed.ToString());
 
-				HtmlGenerator.Generate(dump, Title);
+				var dumpPath = HtmlGenerator.Generate(dump, Title, OutputDirectory);
+				
+				if (Show.IsPresent)
+				{
+					OpenInDefaultApplication(dumpPath);
+				}
+			}
+		}
+
+		private IEnumerable<object> NormalizeInputObjects()
+		{
+			var objects = _objects.ToArray();
+			var firstObject = objects.FirstOrDefault();
+			var baseObject = (firstObject as PSObject)?.BaseObject ?? firstObject;
+
+			if (objects.Length == 1 && baseObject is System.Collections.IEnumerable enumerable && !(baseObject is string))
+			{
+				return enumerable.Cast<object>();
 			}
 
+			return objects;
+		}
+
+		private static string GetObjectTypeName(object inputObject)
+		{
+			var baseObject = (inputObject as PSObject)?.BaseObject ?? inputObject;
+
+			return baseObject?.GetType().FullName;
+		}
+
+		private static void OpenInDefaultApplication(string path)
+		{
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = path,
+				UseShellExecute = true
+			});
 		}
 	}
 }

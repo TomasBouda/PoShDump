@@ -7,7 +7,7 @@ RootModule = 'PoShDump.psm1'
 ModuleVersion = '1.0.0'
 
 # Supported PSEditions
-# CompatiblePSEditions = @()
+CompatiblePSEditions = @('Desktop', 'Core')
 
 # ID used to uniquely identify this module
 GUID = '00b81917-770e-4464-a69c-c10a13f9a04d'
@@ -22,10 +22,10 @@ CompanyName = 'Tomas Bouda'
 Copyright = '(c) Tomas Bouda. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'PowerShell module that allows to view and explore any object.'
+Description = 'PowerShell object inspector that exports pipeline objects to an interactive HTML dump.'
 
 # Minimum version of the PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -61,16 +61,16 @@ Description = 'PowerShell module that allows to view and explore any object.'
 NestedModules = @('bin\PoShDump.dll')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Out-Dump'
+FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = '*'
+CmdletsToExport = @('Out-Dump')
 
 # Variables to export from this module
-VariablesToExport = '*'
+VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = '*'
+AliasesToExport = @('dmp')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -87,19 +87,19 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('PowerShell', 'object', 'html', 'dump', 'debugging', 'visualization', 'PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/TomasBouda/Out-Dump/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/TomasBouda/Out-Dump'
 
         # A URL to an icon representing this module.
-        # IconUri = ''
+        IconUri = 'https://raw.githubusercontent.com/TomasBouda/Out-Dump/master/src/PoShDump/resources/images/icon-128.png'
 
         # ReleaseNotes of this module
-        # ReleaseNotes = ''
+        ReleaseNotes = 'Preview release with interactive offline HTML dumps, pass-through pipeline behavior, and PowerShell Gallery metadata.'
 
         # Prerelease string of this module
          Prerelease = 'preview1'

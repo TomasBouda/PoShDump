@@ -22,14 +22,14 @@ namespace PoShDump.Html.Helpers
 		///// <returns></returns>
 		public static HtmlElement<HtmlAttribute> fa(string cssClass) => new HtmlElement<HtmlAttribute>("i", "").WithAttributes(a => a.@class(cssClass));
 
-		public static HtmlElement<linkAttr> LinkCss(Uri href) => LinkCss(href.AbsolutePath);
+		public static HtmlElement<linkAttr> LinkCss(Uri href) => LinkCss(href.AbsoluteUri);
 		public static HtmlElement<linkAttr> LinkCss(string href) => new link()
 			.WithAttributes(a =>
 				a.rel("stylesheet")
 				.type("text/css")
 				.href(href));
 
-		public static HtmlElement<scriptAttr> LinkScript(Uri src) => LinkScript(src.AbsolutePath);
+		public static HtmlElement<scriptAttr> LinkScript(Uri src) => LinkScript(src.AbsoluteUri);
 		public static HtmlElement<scriptAttr> LinkScript(string src) => new script(string.Empty).WithAttributes(a => a.src(src));
 	}
 }

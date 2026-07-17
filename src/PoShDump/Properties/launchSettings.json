@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "SimpleKeePass": {
+    "PoShDump": {
       "commandName": "Executable",
       "executablePath": "pwsh",
       "commandLineArgs": "-File \"D:\\Root\\GIT\\PoShDump\\debug.ps1\" -NoExit",

@@ -8,9 +8,9 @@ var hg = new HtmlPageGenerator(@"D:\Root\GIT\PoShDump\src\PoShDump\bin\Debug\net
 
 var proc = Process.GetProcesses().Take(25);
 var sw = Stopwatch.StartNew();
-var dump = await op.DumpCollection(proc, 2);
+var dump = await op.DumpCollectionAsync(proc, 2);
 sw.Stop();
 
 Console.WriteLine(sw.Elapsed.ToString());
 
-hg.Generate(dump, "c#");
+hg.Generate(dump, "c#", @"D:\Root\GIT\PoShDump\src\PoShDump\bin\Debug\");

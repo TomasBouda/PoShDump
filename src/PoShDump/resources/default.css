@@ -20,6 +20,8 @@ body {
 	font-weight: bold;
 	padding: 5px;
 	margin-top: auto;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 footer {
@@ -27,6 +29,8 @@ footer {
 	text-align: center;
 	background: #DAEAFA;
 	padding: 7px 5px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .credits {
@@ -37,6 +41,7 @@ footer {
 }
 
 body>table {
+	align-self: flex-start;
 	margin: 5px;
 }
 

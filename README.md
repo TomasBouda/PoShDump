@@ -63,6 +63,7 @@ Get-Service | Out-Dump | Where-Object Status -eq 'Running'
 | `-OutputDirectory` | Folder where `dump-*.html` is written. Default: temp folder under `TomLabs\PoShDump`. |
 | `-ResourcesDirectory` | Overrides the CSS/JS resource folder. Mostly useful for development. |
 | `-Show` | Opens the generated HTML file with the operating system default application. |
+| `-IncludeData` | Also writes the dump into the page as JSON, for tools rather than people. Roughly doubles the file size. |
 
 The alias `dmp` is registered for `Out-Dump`.
 

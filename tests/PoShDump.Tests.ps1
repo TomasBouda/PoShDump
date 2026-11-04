@@ -155,3 +155,105 @@ Describe 'Dump page' {
 		$script:page | Should -Match 'PoShDump v\d+\.\d+\.\d+'
 	}
 }
+
+Describe 'Dump data' {
+	BeforeAll {
+		function Get-DumpData {
+			param([string] $Content)
+
+			$match = [regex]::Match($Content, '(?s)<script type="application/json" id="poshdump-data">(.*?)</script>')
+			if (-not $match.Success) {
+				throw 'The dump carries no data island.'
+			}
+
+			return $match.Groups[1].Value | ConvertFrom-Json
+		}
+	}
+
+	It 'is left out unless it is asked for' {
+		$directory = New-DumpDirectory
+		[pscustomobject]@{ Name = 'Alpha' } | Out-Dump -OutputDirectory $directory | Out-Null
+
+		Get-DumpContent $directory | Should -Not -Match 'application/json'
+	}
+
+	It 'names the format and its version' {
+		$directory = New-DumpDirectory
+		[pscustomobject]@{ Name = 'Alpha' } | Out-Dump -OutputDirectory $directory -IncludeData | Out-Null
+
+		$data = Get-DumpData (Get-DumpContent $directory)
+
+		$data.format | Should -Be 'poshdump-dump'
+		$data.version | Should -Be 1
+	}
+
+	It 'describes a single object by its members, in order' {
+		$directory = New-DumpDirectory
+		[pscustomobject][ordered]@{ Id = 7; Name = 'Alpha'; Paid = $true } |
+			Out-Dump -OutputDirectory $directory -IncludeData | Out-Null
+
+		$root = (Get-DumpData (Get-DumpContent $directory)).root
+
+		$root.kind | Should -Be 'object'
+		$root.members.name | Should -Be @('Id', 'Name', 'Paid')
+	}
+
+	It 'describes a collection as columns and rows' {
+		$directory = New-DumpDirectory
+		1..3 | ForEach-Object { [pscustomobject][ordered]@{ Id = $_; Name = "Item $_" } } |
+			Out-Dump -OutputDirectory $directory -IncludeData | Out-Null
+
+		$root = (Get-DumpData (Get-DumpContent $directory)).root
+
+		$root.kind | Should -Be 'collection'
+		$root.count | Should -Be 3
+		$root.columns.name | Should -Be @('Id', 'Name')
+		$root.rows | Should -HaveCount 3
+		$root.rows[2][1].text | Should -Be 'Item 3'
+	}
+
+	It 'keeps the kind of every value' {
+		$directory = New-DumpDirectory
+		[pscustomobject][ordered]@{
+			Text    = 'hello'
+			Yes     = $true
+			Number  = 42
+			Nothing = $null
+		} | Out-Dump -OutputDirectory $directory -IncludeData | Out-Null
+
+		$members = (Get-DumpData (Get-DumpContent $directory)).root.members
+
+		$members[0].value.valueKind | Should -Be 'string'
+		$members[1].value.valueKind | Should -Be 'boolean'
+		$members[1].value.boolean | Should -BeTrue
+		$members[2].value.valueKind | Should -Be 'text'
+		$members[3].value.valueKind | Should -Be 'null'
+	}
+
+	It 'carries a nested object as a nested node' {
+		$directory = New-DumpDirectory
+		[pscustomobject][ordered]@{
+			Name    = 'Alpha'
+			Address = [pscustomobject]@{ City = 'Brno' }
+		} | Out-Dump -OutputDirectory $directory -Depth 3 -IncludeData | Out-Null
+
+		$members = (Get-DumpData (Get-DumpContent $directory)).root.members
+
+		$members[1].value.kind | Should -Be 'object'
+		$members[1].value.members[0].value.text | Should -Be 'Brno'
+	}
+
+	It 'survives markup inside a value' {
+		$directory = New-DumpDirectory
+		[pscustomobject]@{ Note = 'closes with </script> & opens with <b>' } |
+			Out-Dump -OutputDirectory $directory -IncludeData | Out-Null
+
+		$content = Get-DumpContent $directory
+		$data = Get-DumpData $content
+
+		$data.root.members[0].value.text | Should -Be 'closes with </script> & opens with <b>'
+		# The island must be the only JSON script on the page: an unescaped "</script>" would have
+		# ended it early and left the rest of the payload as page text.
+		([regex]::Matches($content, 'application/json')).Count | Should -Be 1
+	}
+}

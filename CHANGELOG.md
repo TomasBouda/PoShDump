@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- `Out-Dump -IncludeData` writes the dump into the page as JSON as well as HTML (a
+  `<script type="application/json" id="poshdump-data">` data island, format `poshdump-dump` version 1), so a
+  tool can read a dump without parsing its markup. Off by default, because it roughly doubles the file size.
+
+### Changes
+
+- Split the dump pipeline into an object walker (object to model), an HTML renderer (model to HTML) and a JSON
+  writer (model to JSON), with an explicit dump model in between. The generated HTML is unchanged. Recorded as
+  ADR 0003.
+- Dropped the `AsyncEnumerator` dependency, which was referenced but never used: the module now ships two
+  assemblies instead of six and has no third party runtime dependency.
+
 ## 1.0.0 — 2026-11-04
 
 ### Features

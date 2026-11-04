@@ -1,6 +1,7 @@
-﻿using System;
+using PoShDump.Dump;
 using PoShDump.Html;
 using PoShDump.Html.Extensions;
+using PoShDump.Model;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -25,18 +26,26 @@ namespace PoShDump.CmdLets
 
 		[Parameter(Mandatory = false)]
 		public string Title { get; set; }
-		
+
 		[Parameter(Mandatory = false)]
 		public string ResourcesDirectory { get; set; }
-		
+
 		[Parameter(Mandatory = false)]
 		public string OutputDirectory { get; set; }
-		
+
 		[Parameter(Mandatory = false)]
 		public SwitchParameter Show { get; set; }
 
+		/// <summary>
+		/// Writes the dump model into the page as JSON as well as HTML, so that a tool rather than a
+		/// person can read the dump. Off by default, because it roughly doubles the size of the file.
+		/// </summary>
+		[Parameter(Mandatory = false)]
+		public SwitchParameter IncludeData { get; set; }
+
 		private HtmlPageGenerator HtmlGenerator { get; set; }
-		private ObjectProcessor ObjectProcessor { get; set; }
+		private ObjectWalker Walker { get; set; }
+		private DumpHtmlRenderer Renderer { get; set; }
 
 		private IEnumerable<object> _objects = new List<object>();
 
@@ -57,9 +66,10 @@ namespace PoShDump.CmdLets
 			{
 				Directory.CreateDirectory(OutputDirectory);
 			}
-			
+
 			HtmlGenerator = new HtmlPageGenerator(ResourcesDirectory);
-			ObjectProcessor = new ObjectProcessor();
+			Walker = new ObjectWalker();
+			Renderer = new DumpHtmlRenderer();
 		}
 
 		protected override void ProcessRecord()
@@ -83,40 +93,19 @@ namespace PoShDump.CmdLets
 				return;
 			}
 
-			if (objects.Length > 1)
+			Title = Title ?? $"{GetObjectTypeName(objects.First())} \u2022 Out-Dump";
+
+			// The object is walked once into a model; the HTML and the optional JSON are two views of it.
+			var dump = objects.Length > 1
+				? (DumpNode)Walker.WalkCollection(objects, Depth)
+				: Walker.WalkObject(objects.First(), Depth);
+
+			var data = IncludeData.IsPresent ? DumpJsonWriter.Write(dump) : null;
+			var dumpPath = HtmlGenerator.Generate(Renderer.Render(dump), Title, OutputDirectory, data);
+
+			if (Show.IsPresent)
 			{
-				Title = Title ?? $"{GetObjectTypeName(objects.First())} • Out-Dump";
-
-				var sw = Stopwatch.StartNew();
-				var dump = ObjectProcessor.DumpCollectionAsync(objects, Depth).GetAwaiter().GetResult();
-				sw.Stop();
-
-				// Host.UI.WriteLine(sw.Elapsed.ToString());
-
-				var dumpPath = HtmlGenerator.Generate(dump, Title, OutputDirectory);
-
-				if (Show.IsPresent)
-				{
-					OpenInDefaultApplication(dumpPath);
-				}
-			}
-			else
-			{
-				var obj = objects.First();
-				Title = Title ?? $"{GetObjectTypeName(obj)} • Out-Dump";
-
-				var sw = Stopwatch.StartNew();
-				var dump = ObjectProcessor.DumpObjectAsync(obj, Depth).GetAwaiter().GetResult();
-				sw.Stop();
-
-				// Host.UI.WriteLine(sw.Elapsed.ToString());
-
-				var dumpPath = HtmlGenerator.Generate(dump, Title, OutputDirectory);
-				
-				if (Show.IsPresent)
-				{
-					OpenInDefaultApplication(dumpPath);
-				}
+				OpenInDefaultApplication(dumpPath);
 			}
 		}
 

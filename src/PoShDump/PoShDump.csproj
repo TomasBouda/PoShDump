@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="AsyncEnumerator" Version="4.0.2" />
 	<PackageReference Include="PowerShellStandard.Library" Version="5.1.0">
 	  <PrivateAssets>All</PrivateAssets>
 	</PackageReference>

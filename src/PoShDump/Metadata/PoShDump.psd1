@@ -99,10 +99,10 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/TomasBouda/PoShDump/master/src/PoShDump/resources/images/icon-128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Preview release with interactive offline HTML dumps, pass-through pipeline behavior, and PowerShell Gallery metadata.'
+        ReleaseNotes = 'First stable release. Dumps keep the property order of the input object, wide objects scroll inside the page instead of overflowing it, and every dump is a single self-contained HTML file.'
 
         # Prerelease string of this module
-         Prerelease = 'preview1'
+        # Prerelease = ''
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false

@@ -14,11 +14,10 @@ being written up.
 
 ## Install
 
-PoShDump is on the PowerShell Gallery. Until `1.0.0` is released, only a prerelease is published there, so the
-install needs `-AllowPrerelease`:
+PoShDump is on the [PowerShell Gallery](https://www.powershellgallery.com/packages/PoShDump):
 
 ```powershell
-Install-Module PoShDump -Scope CurrentUser -AllowPrerelease
+Install-Module PoShDump -Scope CurrentUser
 ```
 
 For local development:
@@ -84,7 +83,7 @@ The alias `dmp` is registered for `Out-Dump`.
 ```
 
 Remove `-WhatIf` only when the preview output looks right. Every push and pull request on `master` is built and
-smoke-tested by [GitHub Actions](.github/workflows/build.yml); `azure-pipelines.yml` does the same on Azure
+tested by [GitHub Actions](.github/workflows/build.yml); `azure-pipelines.yml` does the same on Azure
 DevOps and publishes to the PowerShell Gallery for tags starting with `v`.
 
 ## Contributing

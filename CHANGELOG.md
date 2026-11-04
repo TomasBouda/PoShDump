@@ -4,6 +4,9 @@
 
 ### Changes
 
+- Opened the source at `github.com/TomasBouda/PoShDump`, with GitHub Actions CI, contributing and security
+  notes, and a screenshot in the README.
+- Removed dead scratch files (`dump.html`, `debug.ps1`, `src/.idea`, two console projects) from the repository.
 - Pointed the gallery metadata at the public GitHub repository `TomasBouda/PoShDump`.
 - Recorded the open core decision in `docs/decisions` (ADR 0001).
 

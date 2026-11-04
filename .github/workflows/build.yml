@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and smoke test
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build and smoke test
+        shell: pwsh
+        run: ./Test-PoShDump.ps1
+
+      - name: Validate the gallery package
+        shell: pwsh
+        run: |
+          $manifest = Test-ModuleManifest ./output/PoShDump/PoShDump.psd1
+
+          if (-not $manifest.ExportedCmdlets.ContainsKey('Out-Dump')) {
+            throw 'Out-Dump is not exported by the module manifest.'
+          }
+
+          foreach ($file in 'README.md', 'LICENSE', 'CHANGELOG.md') {
+            if (-not (Test-Path "./output/PoShDump/$file")) {
+              throw "$file is missing from the gallery package."
+            }
+          }
+
+      - name: Upload the module
+        uses: actions/upload-artifact@v4
+        with:
+          name: PoShDump
+          path: output/PoShDump

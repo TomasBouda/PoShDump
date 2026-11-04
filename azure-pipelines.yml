@@ -31,10 +31,10 @@ stages:
             displayName: Install .NET SDK
             inputs:
               packageType: sdk
-              version: 8.x
+              version: 10.x
 
           - task: PowerShell@2
-            displayName: Build and smoke test
+            displayName: Build and test
             inputs:
               pwsh: true
               targetType: filePath
@@ -53,8 +53,10 @@ stages:
                   throw "Out-Dump cmdlet is not exported by the module manifest."
                 }
 
-                if (-not (Test-Path "$(Build.SourcesDirectory)\output\$(moduleName)\README.md")) {
-                  throw "README.md is missing from the gallery package."
+                foreach ($file in 'README.md', 'LICENSE', 'CHANGELOG.md') {
+                  if (-not (Test-Path "$(Build.SourcesDirectory)\output\$(moduleName)\$file")) {
+                    throw "$file is missing from the gallery package."
+                  }
                 }
 
           - task: PublishPipelineArtifact@1

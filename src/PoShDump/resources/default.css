@@ -40,9 +40,18 @@ footer {
 	opacity: 0.85;
 }
 
-body>table {
+.dump {
 	align-self: flex-start;
 	margin: 5px;
+	max-width: calc(100% - 10px);
+	overflow-x: auto;
+}
+
+/* The top level table sizes to its content and scrolls inside .dump,
+   so wide objects never force the page itself to scroll. */
+.dump > table {
+	max-width: none;
+	width: max-content;
 }
 
 table {
@@ -72,6 +81,7 @@ table th {
 	border-color: lightgray;
 	border-style: solid;
 	padding: 3px;
+	vertical-align: top;
 }
 
 table th {
@@ -175,6 +185,10 @@ table thead {
 .value-string {
 	color: #a31515;
 	white-space: pre-wrap;
+	display: inline-block;
+	max-width: 48ch;
+	max-height: 7.5em;
+	overflow: auto;
 }
 
 .value-string:before {

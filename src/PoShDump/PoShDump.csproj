@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+	<!-- netstandard2.0, not net10.0: the module has to load in Windows PowerShell 5.1 (.NET Framework)
+	     as well as in PowerShell 7, and netstandard2.0 is the only target both hosts can load. -->
 	<TargetFramework>netstandard2.0</TargetFramework>
 	<AssemblyName>PoShDump</AssemblyName>
+	<Version>1.0.0</Version>
 	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 

@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- netstandard2.0, not net10.0: this library is consumed by the PoShDump module, which has to load
+         in Windows PowerShell 5.1 as well as in PowerShell 7. -->
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 

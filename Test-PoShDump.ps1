@@ -1,28 +1,37 @@
-$ErrorActionPreference = 'Stop'
-
-$moduleName = 'PoShDump'
-$modulePath = Join-Path $PSScriptRoot "output\$moduleName\$moduleName.psd1"
-$outputDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "$moduleName-SmokeTest"
-
-& (Join-Path $PSScriptRoot 'Build.ps1')
-
-if (Test-Path $outputDirectory) {
-	Remove-Item $outputDirectory -Recurse -Force
-}
-
-New-Item $outputDirectory -ItemType Directory -Force | Out-Null
-Import-Module $modulePath -Force
-
-$items = @(
-	[pscustomobject]@{ Name = 'Alpha'; Count = 1; Enabled = $true },
-	[pscustomobject]@{ Name = 'Beta'; Count = 2; Enabled = $false }
+<#
+.SYNOPSIS
+	Builds the module and runs the Pester test suite against the built output.
+#>
+[CmdletBinding()]
+param(
+	[switch] $SkipBuild
 )
 
-$items | Out-Dump -OutputDirectory $outputDirectory | Out-Null
+$ErrorActionPreference = 'Stop'
 
-$dump = Get-ChildItem $outputDirectory -Filter 'dump-*.html' | Select-Object -First 1
-if (-not $dump) {
-	throw 'Smoke test failed: no dump HTML was generated.'
+if (-not $SkipBuild) {
+	& (Join-Path $PSScriptRoot 'Build.ps1')
 }
 
-Write-Host "Smoke test generated $($dump.FullName)"
+$pester = Get-Module Pester -ListAvailable |
+	Where-Object { $_.Version -ge [version]'5.0.0' } |
+	Sort-Object Version -Descending |
+	Select-Object -First 1
+
+if (-not $pester) {
+	Write-Host 'Installing Pester 5...'
+	Install-Module Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force -SkipPublisherCheck
+	$pester = Get-Module Pester -ListAvailable |
+		Where-Object { $_.Version -ge [version]'5.0.0' } |
+		Sort-Object Version -Descending |
+		Select-Object -First 1
+}
+
+Import-Module $pester.Path -Force
+
+$configuration = New-PesterConfiguration
+$configuration.Run.Path = Join-Path $PSScriptRoot 'tests'
+$configuration.Run.Throw = $true
+$configuration.Output.Verbosity = 'Detailed'
+
+Invoke-Pester -Configuration $configuration

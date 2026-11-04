@@ -178,7 +178,6 @@ namespace PoShDump.Html
 
 			return psObject.Properties
 				.Where(p => p.IsGettable)
-				.OrderBy(p => p.Name)
 				.Select(p => new DumpProperty(inputObject, p.Name, p.TypeNameOfValue))
 				.ToList();
 		}

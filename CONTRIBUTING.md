@@ -12,7 +12,8 @@ Import-Module .\output\PoShDump\PoShDump.psd1 -Force
 `Build.ps1` compiles the C# projects in `src` and assembles the module into `output\PoShDump`, which is the same
 layout that is published to the PowerShell Gallery.
 
-Before opening a pull request, run the smoke test - it builds and then dumps a small object:
+Before opening a pull request, run the tests - the script builds the module and runs the Pester suite in `tests`
+against the build output:
 
 ```powershell
 .\Test-PoShDump.ps1

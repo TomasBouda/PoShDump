@@ -7,12 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoShDump", "PoShDump\PoShDu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoShDump.Html", "PoShDump.Html\PoShDump.Html.csproj", "{E1C0FD18-9F9F-4645-B12F-75725E7831D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{BE101BFB-4A4A-45F6-A690-695727A05426}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp2", "ConsoleApp2\ConsoleApp2.csproj", "{7718665D-BD06-467A-BABF-E6C1B6060AA6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8036452-2568-4B02-A3A0-4E23868ED522}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,14 +21,6 @@ Global
 		{E1C0FD18-9F9F-4645-B12F-75725E7831D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1C0FD18-9F9F-4645-B12F-75725E7831D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1C0FD18-9F9F-4645-B12F-75725E7831D1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE101BFB-4A4A-45F6-A690-695727A05426}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE101BFB-4A4A-45F6-A690-695727A05426}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE101BFB-4A4A-45F6-A690-695727A05426}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE101BFB-4A4A-45F6-A690-695727A05426}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7718665D-BD06-467A-BABF-E6C1B6060AA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7718665D-BD06-467A-BABF-E6C1B6060AA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7718665D-BD06-467A-BABF-E6C1B6060AA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7718665D-BD06-467A-BABF-E6C1B6060AA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

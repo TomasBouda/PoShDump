@@ -354,3 +354,10 @@ publish/*
 *.code-workspace
 
 output/
+# Rider / IntelliJ
+.idea/
+*.sln.DotSettings.user
+
+# Generated dumps
+dump.html
+dump-*.html

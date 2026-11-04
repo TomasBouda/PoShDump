@@ -90,13 +90,13 @@ PrivateData = @{
         Tags = @('PowerShell', 'object', 'html', 'dump', 'debugging', 'visualization', 'PSEdition_Desktop', 'PSEdition_Core', 'Windows', 'Linux', 'MacOS')
 
         # A URL to the license for this module.
-        LicenseUri = 'https://github.com/TomasBouda/Out-Dump/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/TomasBouda/PoShDump/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/TomasBouda/Out-Dump'
+        ProjectUri = 'https://github.com/TomasBouda/PoShDump'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://raw.githubusercontent.com/TomasBouda/Out-Dump/master/src/PoShDump/resources/images/icon-128.png'
+        IconUri = 'https://raw.githubusercontent.com/TomasBouda/PoShDump/master/src/PoShDump/resources/images/icon-128.png'
 
         # ReleaseNotes of this module
         ReleaseNotes = 'Preview release with interactive offline HTML dumps, pass-through pipeline behavior, and PowerShell Gallery metadata.'

@@ -4,10 +4,11 @@ PoShDump is a PowerShell object inspector. Pipe any object to `Out-Dump` and it 
 
 ## Install
 
-After the module is published to PowerShell Gallery:
+PoShDump is on the PowerShell Gallery. Until `1.0.0` is released, only a prerelease is published there, so the
+install needs `-AllowPrerelease`:
 
 ```powershell
-Install-Module PoShDump -Scope CurrentUser
+Install-Module PoShDump -Scope CurrentUser -AllowPrerelease
 ```
 
 For local development:
@@ -72,13 +73,11 @@ git push origin v1.0.0-preview1
 
 The pipeline builds and smoke-tests every `master` push and pull request. Publishing to PowerShell Gallery only runs for tags starting with `v`.
 
-## Monetization
+## Decisions
 
-The module is a good fit for a free PowerShell Gallery release with optional monetization around it:
-
-- donations or sponsorships from the generated HTML and project page
-- paid support for teams that want customization or internal styling
-- a Pro/internal edition with report templates, export bundles, branding, or redaction helpers
+PoShDump is open core: the module is free and MIT licensed, and the architectural decisions behind it are
+recorded in [docs/decisions](docs/decisions/README.md), starting with
+[ADR 0001 - Distribute PoShDump as open core](docs/decisions/0001-open-core-distribution.md).
 
 ## License
 
